@@ -65,18 +65,19 @@ async function getSongs(folder) {
 
 
 let PlayMusic = (Track, pause = false) => {
-    CurrentSong.src = `Songs/${currFolder}/` + Track;
+    CurrentSong.src = `/${currFolder}/` + Track;
     Play.src = "Images/Play.svg";
 
     if (!pause) {
-        CurrentSong.play();
-        Play.src = "Images/Pause.svg";
+        document.addEventListener("click", () => {
+            CurrentSong.play();
+            Play.src = "Images/Pause.svg";
+        }, { once: true }); // Ensures it runs only once
     }
 
-    document.querySelector(".SongDetails").innerText = decodeURI(Track);
-    document.querySelector(".SongTime").innerText = "00:00 / 00:00";
-};
-
+    document.querySelector(".SongDetails").innerHTML = decodeURI(Track);
+    document.querySelector(".SongTime").innerHTML = "00:00 / 00:00";
+}
 
 async function displayAlbums() {
     let a = await fetch(`/Songs/`)
