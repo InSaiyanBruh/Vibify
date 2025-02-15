@@ -123,63 +123,42 @@ let PlayMusic = (Track, pause = false) => {
 
 
 async function displayAlbums() {
-    let jsonURL = "https://insaiyanbruh.github.io/Vibify/songs.json";
+    let jsonURL = "https://insaiyanbruh.github.io/Vibify/Songs/songs.json";
     let baseURL = "https://insaiyanbruh.github.io/Vibify/Songs/";
     
     try {
         let response = await fetch(jsonURL);
-        let data = await response.json();
 
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        let data = await response.json();
         console.log("📀 Fetched JSON Data:", data);
 
         let Card_Container = document.querySelector(".Card_Container");
-
-        if (!Card_Container) {
-            console.error("❌ .Card_Container not found in DOM!");
-            return;
-        }
-
-        // Clear previous cards (if any)
-        Card_Container.innerHTML = "";
-
-        let albumKeys = Object.keys(data);
-        console.log("✅ Albums detected:", albumKeys);
-
-        if (albumKeys.length === 0) {
-            console.warn("⚠️ No albums found in songs.json");
-        }
+        Card_Container.innerHTML = ""; // Clear previous content
 
         for (let album in data) {
             let albumSongs = data[album];
-            let coverURL = `${baseURL}${album}/Cover.png`;
 
-            console.log(`📂 Checking cover for: ${album} -> ${coverURL}`);
-
-            // Debug check if image exists
-            let coverExists = await fetch(coverURL).then(res => res.ok).catch(() => false);
-            if (!coverExists) {
-                console.warn(`⚠️ Cover missing for ${album}, using default`);
-                coverURL = "https://insaiyanbruh.github.io/Vibify/default_cover.png"; // Default fallback
-            }
-
-            // Create album card in UI
+            // Create album card
             Card_Container.innerHTML += `
                 <div data-folder="${album}" class="Card">
-                    <img src="${coverURL}" alt="${album}">
+                    <img src="${baseURL}${album}/Cover.png" alt="${album}" onerror="this.src='default-cover.png'">
                     <i class="ri-play-fill"></i>
                     <h2>${album}</h2>
                     <p>${albumSongs.length} Songs</p>
                 </div>`;
         }
 
-        console.log("🎨 Album UI Updated!");
+        console.log("✅ Albums detected:", Object.keys(data));
 
         // Add event listeners to album cards
         document.querySelectorAll(".Card").forEach(card => {
             card.addEventListener("click", async () => {
                 let folder = card.getAttribute("data-folder");
                 let Songs = data[folder].map(song => `${baseURL}${folder}/${song}`);
-                console.log(`🎵 Trying to play: ${Songs[0]}`);
                 PlayMusic(Songs[0]); // Play first song
             });
         });
@@ -188,6 +167,7 @@ async function displayAlbums() {
         console.error("❌ Error fetching albums:", error);
     }
 }
+
 
     
 
