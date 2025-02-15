@@ -123,41 +123,47 @@ let PlayMusic = (Track, pause = false) => {
 
 
 async function displayAlbums() {
-    let jsonURL = "https://insaiyanbruh.github.io/Vibify/songs.json";
     let baseURL = "https://insaiyanbruh.github.io/Vibify/Songs/";
     
     try {
-        let response = await fetch(jsonURL);
+        // Fetch songs.json which contains album names
+        let response = await fetch(baseURL + "songs.json");
         let data = await response.json();
 
-        console.log("📀 Fetched JSON Data:", data);
+        console.log("📀 Detected Albums:", Object.keys(data));
 
         let Card_Container = document.querySelector(".Card_Container");
+        Card_Container.innerHTML = ""; // Clear previous data
 
-        // Clear previous cards (if any)
-        Card_Container.innerHTML = "";
-
+        // Loop through each album in the JSON file
         for (let album in data) {
-            let albumSongs = data[album];
+            let metadataUrl = `${baseURL}${album}/Info.json`;
+            let coverUrl = `${baseURL}${album}/Cover.png`;
 
-            // Create album card in UI
-            Card_Container.innerHTML += `
-                <div data-folder="${album}" class="Card">
-                    <img src="${baseURL}${album}/Cover.png" alt="${album}">
-                    <i class="ri-play-fill"></i>
-                    <h2>${album}</h2>
-                    <p>${albumSongs.length} Songs</p>
-                </div>`;
+            try {
+                // Fetch album metadata (title & description)
+                let metadataResponse = await fetch(metadataUrl);
+                let metadata = metadataResponse.ok ? await metadataResponse.json() : { Title: album, Description: "No description available." };
+
+                // Add album card to UI
+                Card_Container.innerHTML += `
+                    <div data-folder="${album}" class="Card">
+                        <img src="${coverUrl}" alt="${metadata.Title}">
+                        <i class="ri-play-fill"></i>
+                        <h2>${metadata.Title}</h2>
+                        <p>${metadata.Description}</p>
+                    </div>`;
+            } catch (error) {
+                console.error(`Error loading album ${album}:`, error);
+            }
         }
-
-        console.log("✅ Albums detected:", Object.keys(data));
 
         // Add event listeners to album cards
         document.querySelectorAll(".Card").forEach(card => {
             card.addEventListener("click", async () => {
                 let folder = card.getAttribute("data-folder");
-                let Songs = data[folder].map(song => `${baseURL}${folder}/${song}`);
-                PlayMusic(Songs[0]); // Play first song
+                Songs = await getSongs(`Songs/${folder}`);
+                PlayMusic(Songs[0]);
             });
         });
 
@@ -166,8 +172,7 @@ async function displayAlbums() {
     }
 }
 
-
-
+    
 
 async function main() {
     await getSongs("NCS");
