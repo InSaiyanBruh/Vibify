@@ -37,6 +37,11 @@ async function getSongs(folder) {
         return [];
     }
 
+    fetch("https://insaiyanbruh.github.io/Vibify/Songs/songs.json")
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error("Fetch Error:", error));
+
     let data;
     try {
         data = await response.json();
@@ -159,7 +164,7 @@ async function displayAlbums() {
 }
 
 async function main() {
-    await getSongs("Songs/NCS");
+    await getSongs("NCS");
     PlayMusic(Songs[0], true)
 
     displayAlbums()
