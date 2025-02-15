@@ -24,8 +24,26 @@ async function getSongs(folder) {
     currFolder = folder;
 
     // Fetch the JSON file that contains all song data
-    let response = let response = await fetch("https://insaiyanbruh.github.io/Vibify/Songs/songs.json");
-    let data = await response.json();
+    let response;
+    try {
+        response = await fetch("https://insaiyanbruh.github.io/Vibify/Songs/songs.json");
+
+        if (!response.ok) {
+            console.error(`Error fetching songs.json: ${response.status} ${response.statusText}`);
+            return [];
+        }
+    } catch (error) {
+        console.error("Network error while fetching songs.json:", error);
+        return [];
+    }
+
+    let data;
+    try {
+        data = await response.json();
+    } catch (error) {
+        console.error("Error parsing JSON:", error);
+        return [];
+    }
 
     // Check if the folder exists in songs.json
     if (!data[folder]) {
@@ -36,6 +54,11 @@ async function getSongs(folder) {
     Songs = data[folder];
 
     let songUL = document.querySelector(".SongList ul");
+    if (!songUL) {
+        console.error("Element '.SongList ul' not found in the DOM.");
+        return [];
+    }
+    
     songUL.innerHTML = "";
 
     // Loop through songs and add to the list
@@ -54,7 +77,7 @@ async function getSongs(folder) {
     }
 
     // Add click event to play songs
-    Array.from(document.querySelectorAll(".SongList li")).forEach(e => {
+    document.querySelectorAll(".SongList li").forEach(e => {
         e.addEventListener("click", () => {
             PlayMusic(e.querySelector(".SongInfo div").innerText.trim());
         });
