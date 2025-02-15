@@ -1,6 +1,7 @@
 {
     "Title": "Pop",
     "Description": "Today's Pop Hits",
+    "Cover": "Cover.png",
     "Songs": [
       "Bandit - Don Toliver.mp3",
       "The Weeknd - Sao Paulo feat. Anitta.mp3",
