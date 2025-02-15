@@ -125,6 +125,7 @@ let PlayMusic = (Track, pause = false) => {
 async function displayAlbums() {
     let jsonURL = "https://insaiyanbruh.github.io/Vibify/Songs/songs.json";
     let baseURL = "https://insaiyanbruh.github.io/Vibify/Songs/";
+    let metadataUrl = (`https://insaiyanbruh.github.io/Vibify/Songs/$%7BFolder%7D/Info.json`)
     
     try {
         let response = await fetch(jsonURL);
@@ -132,6 +133,9 @@ async function displayAlbums() {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
+
+        let metadataResponse = await fetch(metadataUrl);
+        let metadata = await metadataResponse.json();
 
         let data = await response.json();
         console.log("📀 Fetched JSON Data:", data);
@@ -147,8 +151,8 @@ async function displayAlbums() {
                 <div data-folder="${album}" class="Card">
                     <img src="${baseURL}${album}/Cover.png" alt="${album}" onerror="this.src='default-cover.png'">
                     <i class="ri-play-fill"></i>
-                    <h2>${album}</h2>
-                    <p>${Description}</p>
+                    <h2>${metadata.Title}</h2>
+                    <p>${metadata.Description}</p>
                 </div>`;
         }
 
