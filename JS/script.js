@@ -72,7 +72,7 @@ let PlayMusic = (Track, pause = false) => {
 }
 
 async function displayAlbums() {
-    let a = await fetch(`/Songs/`)
+    let a = await fetch(`Songs`)
     let response = await a.text();
     let div = document.createElement("div")
     div.innerHTML = response;
@@ -81,7 +81,7 @@ async function displayAlbums() {
     let array = Array.from(anchors);
     for (let index = 0; index < array.length; index++) {
         const e = array[index];
-        if (e.href.includes("/Songs") && !e.href.includes(".htaccess")) {
+        if (e.href.includes("Songs") && !e.href.includes(".htaccess")) {
             let folder = e.href.split("/").slice(-1)[0]; // Extract folder name
             if (!folder) {
                 console.error("Folder name is empty or undefined. Skipping this item.");
@@ -89,7 +89,7 @@ async function displayAlbums() {
             }
     
             // Construct the metadata URL and ensure proper formatting
-            let metadataUrl = new URL(`/Songs/${folder}/Info.json`, window.location.origin).href;
+            let metadataUrl = new URL(`Songs${folder}/Info.json`, window.location.origin).href;
             console.log(`Attempting to fetch metadata from: ${metadataUrl}`);
     
             try {
@@ -106,7 +106,7 @@ async function displayAlbums() {
                 // Display album card
                 Card_Container.innerHTML += `
                     <div data-folder="${folder}" class="Card">
-                        <img src="/Songs/${folder}/Cover.png" alt="${metadata.Title}">
+                        <img src="Songs/${folder}/Cover.png" alt="${metadata.Title}">
                         <i class="ri-play-fill"></i>
                         <h2>${metadata.Title}</h2>
                         <p>${metadata.Description}</p>
