@@ -128,61 +128,51 @@ async function displayAlbums() {
     Card_Container.innerHTML = ""; // Clear previous content
 
     try {
-        // Fetch the directory listing of "Songs"
-        let response = await fetch(baseURL);
-        let text = await response.text();
+        // 🔹 Fetch song data from songs.json
+        let response = await fetch(`${baseURL}songs.json`);
+        let data = await response.json();
+        
+        console.log("📀 Detected Albums from songs.json:", Object.keys(data));
 
-        let div = document.createElement("div");
-        div.innerHTML = text;
-
-        let anchors = div.getElementsByTagName("a");
-        let albumFolders = [];
-
-        // Extract valid album folder names
-        for (let anchor of anchors) {
-            let folderName = anchor.href.split("/").slice(-2, -1)[0]; // Extract last folder
-            if (!folderName || folderName.includes(".")) continue; // Skip invalid names
-            albumFolders.push(folderName);
+        if (!data || Object.keys(data).length === 0) {
+            console.warn("⚠️ No albums found in songs.json!");
+            return;
         }
 
-        console.log("📀 Detected Albums:", albumFolders);
-
-        // Loop through each album folder and fetch metadata
-        for (let folder of albumFolders) {
-            let metadataUrl = `${baseURL}${folder}/Info.json`;
+        for (let albumName of Object.keys(data)) {
+            let metadataUrl = `${baseURL}${albumName}/Info.json`;
 
             console.log(`📂 Fetching metadata: ${metadataUrl}`);
 
             try {
                 let metadataResponse = await fetch(metadataUrl);
 
+                let metadata;
                 if (!metadataResponse.ok) {
-                    console.error(`❌ Error fetching metadata for ${folder}: ${metadataResponse.status}`);
-                    continue;
+                    console.warn(`⚠️ Missing Info.json for ${albumName}, using fallback.`);
+                    metadata = {
+                        title: albumName, // Default title = folder name
+                        description: "No description available",
+                        cover: "Cover.png"
+                    };
+                } else {
+                    metadata = await metadataResponse.json();
                 }
 
-                let metadata = await metadataResponse.json();
-
-                // Ensure metadata contains required fields
-                if (!metadata.Title || !metadata.Description || !metadata.Cover) {
-                    console.error(`⚠️ Incomplete metadata for ${folder}:`, metadata);
-                    continue;
-                }
-
-                // Add album card to UI
+                // 🎨 Add album card to UI
                 Card_Container.innerHTML += `
-                    <div data-folder="${folder}" class="Card">
-                        <img src="${baseURL}${folder}/${metadata.Cover}" alt="${metadata.Title}">
+                    <div data-folder="${albumName}" class="Card">
+                        <img src="${baseURL}${albumName}/${metadata.cover}" alt="${metadata.title}">
                         <i class="ri-play-fill"></i>
-                        <h2>${metadata.Title}</h2>
-                        <p>${metadata.Description}</p>
+                        <h2>${metadata.title}</h2>
+                        <p>${metadata.description}</p>
                     </div>`;
             } catch (error) {
-                console.error(`❌ Error loading album ${folder}:`, error);
+                console.error(`❌ Error loading album ${albumName}:`, error);
             }
         }
 
-        // Add event listeners to album cards
+        // ▶️ Add event listeners to album cards
         document.querySelectorAll(".Card").forEach(card => {
             card.addEventListener("click", async () => {
                 let folder = card.getAttribute("data-folder");
@@ -196,9 +186,10 @@ async function displayAlbums() {
         });
 
     } catch (error) {
-        console.error("❌ Error fetching album list:", error);
+        console.error("❌ Error fetching albums:", error);
     }
 }
+
 
 
 
