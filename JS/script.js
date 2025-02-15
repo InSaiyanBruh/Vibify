@@ -1,3 +1,4 @@
+document.addEventListener("DOMContentLoaded", function () {
 let CurrentSong = new Audio();
 let Songs;
 let currFolder;
@@ -211,3 +212,4 @@ async function main() {
 }
 
 main()
+});
