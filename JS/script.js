@@ -121,64 +121,85 @@ let PlayMusic = (Track, pause = false) => {
     document.querySelector(".SongTime").innerHTML = "00:00 / 00:00";
 }
 
+
 async function displayAlbums() {
     let baseURL = "https://insaiyanbruh.github.io/Vibify/Songs/";
-
-    let albumFolders = ["NCS", "OtherAlbum"]; // Manually list albums or fetch from songs.json
-
     let Card_Container = document.querySelector(".Card_Container");
     Card_Container.innerHTML = ""; // Clear previous content
 
-    console.log("Albums detected:", albumFolders);
+    try {
+        // Fetch the directory listing of "Songs"
+        let response = await fetch(baseURL);
+        let text = await response.text();
 
-    // Loop through each album folder and fetch metadata
-    for (let folder of albumFolders) {
-        let metadataUrl = `${baseURL}${folder}/Info.json`;
+        let div = document.createElement("div");
+        div.innerHTML = text;
 
-        console.log(`Fetching metadata: ${metadataUrl}`);
+        let anchors = div.getElementsByTagName("a");
+        let albumFolders = [];
 
-        try {
-            let metadataResponse = await fetch(metadataUrl);
-
-            if (!metadataResponse.ok) {
-                console.error(`❌ Error fetching metadata for ${folder}: ${metadataResponse.status}`);
-                continue;
-            }
-
-            let metadata = await metadataResponse.json();
-
-            // Ensure metadata contains required fields
-            if (!metadata.Title || !metadata.Description || !metadata.Cover) {
-                console.error(`⚠️ Incomplete metadata for ${folder}:`, metadata);
-                continue;
-            }
-
-            // Add album card to UI
-            Card_Container.innerHTML += `
-                <div data-folder="${folder}" class="Card">
-                    <img src="${baseURL}${folder}/${metadata.Cover}" alt="${metadata.Title}">
-                    <i class="ri-play-fill"></i>
-                    <h2>${metadata.Title}</h2>
-                    <p>${metadata.Description}</p>
-                </div>`;
-        } catch (error) {
-            console.error(`❌ Error loading album ${folder}:`, error);
+        // Extract valid album folder names
+        for (let anchor of anchors) {
+            let folderName = anchor.href.split("/").slice(-2, -1)[0]; // Extract last folder
+            if (!folderName || folderName.includes(".")) continue; // Skip invalid names
+            albumFolders.push(folderName);
         }
-    }
 
-    // Add event listeners to album cards
-    document.querySelectorAll(".Card").forEach(card => {
-        card.addEventListener("click", async () => {
-            let folder = card.getAttribute("data-folder");
-            Songs = await getSongs(`Songs/${folder}`);
-            if (Songs.length > 0) {
-                PlayMusic(Songs[0]);
-            } else {
-                console.warn(`⚠️ No songs found in ${folder}`);
+        console.log("📀 Detected Albums:", albumFolders);
+
+        // Loop through each album folder and fetch metadata
+        for (let folder of albumFolders) {
+            let metadataUrl = `${baseURL}${folder}/Info.json`;
+
+            console.log(`📂 Fetching metadata: ${metadataUrl}`);
+
+            try {
+                let metadataResponse = await fetch(metadataUrl);
+
+                if (!metadataResponse.ok) {
+                    console.error(`❌ Error fetching metadata for ${folder}: ${metadataResponse.status}`);
+                    continue;
+                }
+
+                let metadata = await metadataResponse.json();
+
+                // Ensure metadata contains required fields
+                if (!metadata.Title || !metadata.Description || !metadata.Cover) {
+                    console.error(`⚠️ Incomplete metadata for ${folder}:`, metadata);
+                    continue;
+                }
+
+                // Add album card to UI
+                Card_Container.innerHTML += `
+                    <div data-folder="${folder}" class="Card">
+                        <img src="${baseURL}${folder}/${metadata.Cover}" alt="${metadata.Title}">
+                        <i class="ri-play-fill"></i>
+                        <h2>${metadata.Title}</h2>
+                        <p>${metadata.Description}</p>
+                    </div>`;
+            } catch (error) {
+                console.error(`❌ Error loading album ${folder}:`, error);
             }
+        }
+
+        // Add event listeners to album cards
+        document.querySelectorAll(".Card").forEach(card => {
+            card.addEventListener("click", async () => {
+                let folder = card.getAttribute("data-folder");
+                Songs = await getSongs(`Songs/${folder}`);
+                if (Songs.length > 0) {
+                    PlayMusic(Songs[0]);
+                } else {
+                    console.warn(`⚠️ No songs found in ${folder}`);
+                }
+            });
         });
-    });
+
+    } catch (error) {
+        console.error("❌ Error fetching album list:", error);
+    }
 }
+
 
 
 async function main() {
