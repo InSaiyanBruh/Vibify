@@ -20,56 +20,62 @@ function formatTime(seconds) {
 }
 
 async function getSongs(folder) {
-    currFolder = folder
-    let a = await fetch(`/${folder}`)
-    let response = await a.text();
-    let div = document.createElement("div")
-    div.innerHTML = response;
-    let as = div.getElementsByTagName("a")
-    Songs = []
+    currFolder = folder;
 
-    for (let index = 0; index < as.length; index++) {
-        const element = as[index];
-        if (element.href.endsWith(".mp3")) {
-            Songs.push(element.href.split(`/${folder}/`)[1])
-        }
+    // Fetch the JSON file that contains all song data
+    let response = await fetch(`/Songs/songs.json`);
+    let data = await response.json();
+
+    // Check if the folder exists in songs.json
+    if (!data[folder]) {
+        console.error(`Folder "${folder}" not found in songs.json`);
+        return [];
     }
 
-    let songUL = document.querySelector(".SongList").getElementsByTagName("ul")[0]
-    songUL.innerHTML = ""
+    Songs = data[folder];
+
+    let songUL = document.querySelector(".SongList ul");
+    songUL.innerHTML = "";
+
+    // Loop through songs and add to the list
     for (const song of Songs) {
-        songUL.innerHTML = songUL.innerHTML + `<li>
-                            <img class="Invert" src="Images/Music.svg" alt="">
-                            <div class="SongInfo">
-                                <div>${song.replaceAll("%20", " ")}</div>
-                                <div></div>
-                            </div>
-                            <div class="PlayNow">
-                                <i class="ri-play-fill"></i>
-                            </div>
-                        </li>`;
+        songUL.innerHTML += `
+            <li>
+                <img class="Invert" src="Images/Music.svg" alt="">
+                <div class="SongInfo">
+                    <div>${song.replaceAll("%20", " ")}</div>
+                    <div></div>
+                </div>
+                <div class="PlayNow">
+                    <i class="ri-play-fill"></i>
+                </div>
+            </li>`;
     }
 
-    Array.from(document.querySelector(".SongList").getElementsByTagName("li")).forEach(e => {
-        e.addEventListener("click", element => {
-            PlayMusic(e.querySelector(".SongInfo").firstElementChild.innerHTML.trim())
-        })
-    })
+    // Add click event to play songs
+    Array.from(document.querySelectorAll(".SongList li")).forEach(e => {
+        e.addEventListener("click", () => {
+            PlayMusic(e.querySelector(".SongInfo div").innerText.trim());
+        });
+    });
 
-    return Songs
-
+    return Songs;
 }
+
 
 let PlayMusic = (Track, pause = false) => {
-    CurrentSong.src = `/${currFolder}/` + Track
-    Play.src = "Images/Play.svg"
+    CurrentSong.src = `Songs/${currFolder}/` + Track;
+    Play.src = "Images/Play.svg";
+
     if (!pause) {
-        CurrentSong.play()
-        Play.src = "Images/Pause.svg"
+        CurrentSong.play();
+        Play.src = "Images/Pause.svg";
     }
-    document.querySelector(".SongDetails").innerHTML = decodeURI(Track)
-    document.querySelector(".SongTime").innerHTML = "00:00 / 00:00"
-}
+
+    document.querySelector(".SongDetails").innerText = decodeURI(Track);
+    document.querySelector(".SongTime").innerText = "00:00 / 00:00";
+};
+
 
 async function displayAlbums() {
     let a = await fetch(`/Songs/`)
