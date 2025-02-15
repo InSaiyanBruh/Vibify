@@ -123,53 +123,59 @@ let PlayMusic = (Track, pause = false) => {
 
 
 async function displayAlbums() {
-    let jsonURL = "https://insaiyanbruh.github.io/Vibify/Songs/songs.json";
     let baseURL = "https://insaiyanbruh.github.io/Vibify/Songs/";
-    let metadataUrl = (`https://insaiyanbruh.github.io/Vibify/Songs/$%7BFolder%7D/Info.json`)
-    
-    try {
-        let response = await fetch(jsonURL);
+    let a = await fetch(baseURL);
+    let response = await a.text();
+    let div = document.createElement("div");
+    div.innerHTML = response;
+    let anchors = div.getElementsByTagName("a");
+    let Card_Container = document.querySelector(".Card_Container");
+    let array = Array.from(anchors);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+    for (let index = 0; index < array.length; index++) {
+        const e = array[index];
+        if (e.href.includes("/Songs") && !e.href.includes(".htaccess")) {
+            let folder = e.href.split("/").slice(-1)[0]; // Extract folder name
+            if (!folder) {
+                console.error("Folder name is empty or undefined. Skipping this item.");
+                continue;
+            }
+
+            // Construct the metadata URL
+            let metadataUrl = `${baseURL}${folder}/Info.json`;
+            console.log(`Attempting to fetch metadata from: ${metadataUrl}`);
+
+            try {
+                let metadataResponse = await fetch(metadataUrl);
+
+                // Check if response is OK (status 200), otherwise log an error and continue
+                if (!metadataResponse.ok) {
+                    console.error(`Error fetching metadata for ${folder}: ${metadataResponse.status}`);
+                    continue;
+                }
+
+                let metadata = await metadataResponse.json();
+
+                // Display album card
+                Card_Container.innerHTML += `
+                    <div data-folder="${folder}" class="Card">
+                        <img src="${baseURL}${folder}/Cover.png" alt="${metadata.Title}">
+                        <i class="ri-play-fill"></i>
+                        <h2>${metadata.Title}</h2>
+                        <p>${metadata.Description}</p>
+                    </div>`;
+            } catch (error) {
+                console.error(`Error fetching metadata for ${folder}:`, error);
+            }
         }
-
-        let metadataResponse = await fetch(metadataUrl);
-        let metadata = await metadataResponse.json();
-
-        let data = await response.json();
-        console.log("📀 Fetched JSON Data:", data);
-
-        let Card_Container = document.querySelector(".Card_Container");
-        Card_Container.innerHTML = ""; // Clear previous content
-
-        for (let album in data) {
-            let albumSongs = data[album];
-
-            // Create album card
-            Card_Container.innerHTML += `
-                <div data-folder="${album}" class="Card">
-                    <img src="${baseURL}${album}/Cover.png" alt="${album}" onerror="this.src='default-cover.png'">
-                    <i class="ri-play-fill"></i>
-                    <h2>${metadata.Title}</h2>
-                    <p>${metadata.Description}</p>
-                </div>`;
-        }
-
-        console.log("✅ Albums detected:", Object.keys(data));
-
-        // Add event listeners to album cards
-        document.querySelectorAll(".Card").forEach(card => {
-            card.addEventListener("click", async () => {
-                let folder = card.getAttribute("data-folder");
-                let Songs = data[folder].map(song => `${baseURL}${folder}/${song}`);
-                PlayMusic(Songs[0]); // Play first song
-            });
-        });
-
-    } catch (error) {
-        console.error("❌ Error fetching albums:", error);
     }
+
+    Array.from(document.getElementsByClassName("Card")).forEach(e => {
+        e.addEventListener("click", async item => {
+            Songs = await getSongs(`Songs/${item.currentTarget.dataset.folder}`);
+            PlayMusic(Songs[0]);
+        });
+    });
 }
 
 
