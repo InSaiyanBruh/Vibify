@@ -148,7 +148,7 @@ async function displayAlbums() {
                     <img src="${baseURL}${album}/Cover.png" alt="${album}" onerror="this.src='default-cover.png'">
                     <i class="ri-play-fill"></i>
                     <h2>${album}</h2>
-                    <p>${albumSongs.length} Songs</p>
+                    <p>${Description}</p>
                 </div>`;
         }
 
