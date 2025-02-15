@@ -23,72 +23,75 @@ function formatTime(seconds) {
 async function getSongs(folder) {
     currFolder = folder;
 
-    // Fetch the JSON file that contains all song data
-    let response;
     try {
-        response = await fetch("https://insaiyanbruh.github.io/Vibify/Songs/songs.json");
+        // Fetch the JSON file that contains all song data
+        let response = await fetch("https://insaiyanbruh.github.io/Vibify/Songs/songs.json");
 
+        // Check if the response is valid
         if (!response.ok) {
-            console.error(`Error fetching songs.json: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to fetch songs.json: ${response.status} ${response.statusText}`);
+        }
+
+        let data = await response.json();
+
+        // Debugging logs
+        console.log("Fetched JSON Data:", data);
+        console.log("Looking for folder:", folder);
+
+        // Ensure the folder exists in songs.json
+        if (!data.hasOwnProperty(folder)) {
+            console.error(`❌ Folder "${folder}" not found in songs.json`);
             return [];
         }
-    } catch (error) {
-        console.error("Network error while fetching songs.json:", error);
-        return [];
-    }
 
-    fetch("https://insaiyanbruh.github.io/Vibify/Songs/songs.json")
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error("Fetch Error:", error));
+        Songs = data[folder];
 
-    let data;
-    try {
-        data = await response.json();
-    } catch (error) {
-        console.error("Error parsing JSON:", error);
-        return [];
-    }
+        // Ensure songs exist in the folder
+        if (!Array.isArray(Songs) || Songs.length === 0) {
+            console.error(`❌ No songs found in folder "${folder}"`);
+            return [];
+        }
 
-    // Check if the folder exists in songs.json
-    if (!data[folder]) {
-        console.error(`Folder "${folder}" not found in songs.json`);
-        return [];
-    }
+        console.log("✅ Loaded Songs:", Songs);
 
-    Songs = data[folder];
+        let songUL = document.querySelector(".SongList ul");
+        if (!songUL) {
+            console.error("❌ .SongList ul not found in DOM");
+            return [];
+        }
 
-    let songUL = document.querySelector(".SongList ul");
-    if (!songUL) {
-        console.error("Element '.SongList ul' not found in the DOM.");
-        return [];
-    }
-    
-    songUL.innerHTML = "";
+        songUL.innerHTML = "";
 
-    // Loop through songs and add to the list
-    for (const song of Songs) {
-        songUL.innerHTML += `
-            <li>
-                <img class="Invert" src="Images/Music.svg" alt="">
-                <div class="SongInfo">
-                    <div>${song.replaceAll("%20", " ")}</div>
-                    <div></div>
-                </div>
-                <div class="PlayNow">
-                    <i class="ri-play-fill"></i>
-                </div>
-            </li>`;
-    }
-
-    // Add click event to play songs
-    document.querySelectorAll(".SongList li").forEach(e => {
-        e.addEventListener("click", () => {
-            PlayMusic(e.querySelector(".SongInfo div").innerText.trim());
+        // Loop through songs and add them to the list
+        Songs.forEach(song => {
+            let songName = song.replaceAll("%20", " "); // Decode name
+            songUL.innerHTML += `
+                <li>
+                    <img class="Invert" src="Images/Music.svg" alt="">
+                    <div class="SongInfo">
+                        <div>${songName}</div>
+                        <div></div>
+                    </div>
+                    <div class="PlayNow">
+                        <i class="ri-play-fill"></i>
+                    </div>
+                </li>`;
         });
-    });
 
-    return Songs;
+        // Attach click event listeners to play songs
+        document.querySelectorAll(".SongList li").forEach(e => {
+            e.addEventListener("click", () => {
+                let trackName = e.querySelector(".SongInfo div").innerText.trim();
+                PlayMusic(trackName);
+            });
+        });
+
+        return Songs;
+
+    } catch (error) {
+        console.error("❌ Error in getSongs():", error);
+        return [];
+    }
 }
 
 
