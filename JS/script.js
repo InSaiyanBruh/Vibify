@@ -125,53 +125,44 @@ let PlayMusic = (Track, pause = false) => {
 
 
 async function displayAlbums() {
-    let a = await fetch(`${BASE_PATH}/Songs/`)
-    let response = await a.text();
-    let div = document.createElement("div")
-    div.innerHTML = response;
-    let anchors = div.getElementsByTagName("a")
-    let Card_Container = document.querySelector(".Card_Container")
-    let array = Array.from(anchors);
-    
-    for (let index = 0; index < array.length; index++) {
-        const e = array[index];
-        if (e.href.includes("/Songs/") && !e.href.includes(".htaccess")) {
-            let folder = e.href.split("/").slice(-1)[0];
-            if (!folder) continue;
-            
-            // Update metadata URL to include base path
-            let metadataUrl = `${BASE_PATH}/Songs/${folder}/Info.json`;
-            
-            try {
-                let metadataResponse = await fetch(metadataUrl);
-                if (!metadataResponse.ok) {
-                    console.error(`Error fetching metadata for ${folder}: ${metadataResponse.status}`);
-                    continue;
-                }
-                
-                let metadata = await metadataResponse.json();
-                
-                // Update image path to include base path
-                Card_Container.innerHTML += `
-                    <div data-folder="${folder}" class="Card">
-                        <img src="${BASE_PATH}/Songs/${folder}/Cover.png" alt="${metadata.Title}">
-                        <i class="ri-play-fill"></i>
-                        <h2>${metadata.Title}</h2>
-                        <p>${metadata.Description}</p>
-                    </div>`;
-            } catch (error) {
-                console.error(`Error fetching metadata for ${folder}:`, error);
-            }
+    try {
+        // Fetch the albums data directly from a JSON file
+        const response = await fetch('https://insaiyanbruh.github.io/Vibify/Songs/albums.json');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch albums data: ${response.status}`);
         }
-    }
+        
+        const albumsData = await response.json();
+        let Card_Container = document.querySelector(".Card_Container");
+        Card_Container.innerHTML = ""; // Clear existing content
+        
+        // Create cards for each album
+        for (const album of albumsData.albums) {
+            Card_Container.innerHTML += `
+                <div data-folder="${album.folder}" class="Card">
+                    <img src="https://insaiyanbruh.github.io/Vibify/Songs/${album.folder}/Cover.png" alt="${album.title}">
+                    <i class="ri-play-fill"></i>
+                    <h2>${album.title}</h2>
+                    <p>${album.description}</p>
+                </div>`;
+        }
 
-    // Update event listeners
-    Array.from(document.getElementsByClassName("Card")).forEach(e => {
-        e.addEventListener("click", async item => {
-            Songs = await getSongs(`Songs/${item.currentTarget.dataset.folder}`);
-            PlayMusic(Songs[0])
+        // Add click handlers to the cards
+        Array.from(document.getElementsByClassName("Card")).forEach(e => {
+            e.addEventListener("click", async item => {
+                const folder = item.currentTarget.dataset.folder;
+                Songs = await getSongs(folder);
+                if (Songs && Songs.length > 0) {
+                    PlayMusic(Songs[0]);
+                }
+            })
         })
-    })
+
+    } catch (error) {
+        console.error("Error loading albums:", error);
+        document.querySelector(".Card_Container").innerHTML = 
+            '<p>Unable to load albums. Please try again later.</p>';
+    }
 }
     
     
