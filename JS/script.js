@@ -123,7 +123,7 @@ let PlayMusic = (Track, pause = false) => {
 
 
 async function displayAlbums() {
-    let baseURL = "https://insaiyanbruh.github.io/Vibify/Songs/";
+    let baseURL = "https://insaiyanbruh.github.io/Vibify/Songs/${folder}";
     let a = await fetch(baseURL);
     let response = await a.text();
     let div = document.createElement("div");
@@ -142,7 +142,7 @@ async function displayAlbums() {
             }
 
             // Construct the metadata URL
-            let metadataUrl = `${baseURL}${folder}/Info.json`;
+            let metadataUrl = `${baseURL}/Info.json`;
             console.log(`Attempting to fetch metadata from: ${metadataUrl}`);
 
             try {
