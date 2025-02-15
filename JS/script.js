@@ -94,21 +94,33 @@ async function getSongs(folder) {
     }
 }
 
-
 let PlayMusic = (Track, pause = false) => {
-    CurrentSong.src = `/${currFolder}/` + Track;
+    if (!Track) {
+        console.error("❌ No track name provided to PlayMusic()");
+        return;
+    }
+
+    let songPath = `https://insaiyanbruh.github.io/Vibify/Songs/${currFolder}/${Track}`;
+
+    console.log("🎵 Trying to play:", songPath);
+
+    CurrentSong.src = songPath;
+    CurrentSong.load(); // Ensure the audio is reloaded
+
     Play.src = "Images/Play.svg";
 
     if (!pause) {
-        document.addEventListener("click", () => {
-            CurrentSong.play();
+        CurrentSong.play().then(() => {
             Play.src = "Images/Pause.svg";
-        }, { once: true }); // Ensures it runs only once
+        }).catch(error => {
+            console.error("❌ Playback failed, user interaction needed:", error);
+        });
     }
 
     document.querySelector(".SongDetails").innerHTML = decodeURI(Track);
     document.querySelector(".SongTime").innerHTML = "00:00 / 00:00";
 }
+
 
 async function displayAlbums() {
     let a = await fetch(`/Songs/`)
