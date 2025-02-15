@@ -140,7 +140,7 @@ async function displayAlbums() {
             }
     
             // Construct the metadata URL and ensure proper formatting
-            let metadataUrl = new URL(`/Songs/${folder}/Info.json`, window.location.origin).href;
+            let metadataUrl = new URL(`https://insaiyanbruh.github.io/Vibify/Songs/NCS/Info.json`).href;
             console.log(`Attempting to fetch metadata from: ${metadataUrl}`);
     
             try {
