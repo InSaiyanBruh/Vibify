@@ -24,7 +24,7 @@ async function getSongs(folder) {
     currFolder = folder;
 
     // Fetch the JSON file that contains all song data
-    let response = await fetch(`/Songs/songs.json`);
+    let response = let response = await fetch("https://insaiyanbruh.github.io/Vibify/Songs/songs.json");
     let data = await response.json();
 
     // Check if the folder exists in songs.json
