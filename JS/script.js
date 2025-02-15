@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const BASE_PATH = '/Vibify';
 let CurrentSong = new Audio();
 let Songs;
 let currFolder;
@@ -122,44 +123,38 @@ let PlayMusic = (Track, pause = false) => {
 }
 
 
-async function displayAlbums() {
-    let baseURL = `https://insaiyanbruh.github.io/Vibify/Songs/${folder}`;
-    let a = await fetch(baseURL);
-    let response = await a.text();
-    let div = document.createElement("div");
-    div.innerHTML = response;
-    let anchors = div.getElementsByTagName("a");
-    let Card_Container = document.querySelector(".Card_Container");
-    let array = Array.from(anchors);
 
+async function displayAlbums() {
+    let a = await fetch(`${BASE_PATH}/Songs/`)
+    let response = await a.text();
+    let div = document.createElement("div")
+    div.innerHTML = response;
+    let anchors = div.getElementsByTagName("a")
+    let Card_Container = document.querySelector(".Card_Container")
+    let array = Array.from(anchors);
+    
     for (let index = 0; index < array.length; index++) {
         const e = array[index];
-        if (e.href.includes("/Songs") && !e.href.includes(".htaccess")) {
-            let folder = e.href.split("/").slice(-1)[0]; // Extract folder name
-            if (!folder) {
-                console.error("Folder name is empty or undefined. Skipping this item.");
-                continue;
-            }
-
-            // Construct the metadata URL
-            let metadataUrl = `${baseURL}/Info.json`;
-            console.log(`Attempting to fetch metadata from: ${metadataUrl}`);
-
+        if (e.href.includes("/Songs/") && !e.href.includes(".htaccess")) {
+            let folder = e.href.split("/").slice(-1)[0];
+            if (!folder) continue;
+            
+            // Update metadata URL to include base path
+            let metadataUrl = `${BASE_PATH}/Songs/${folder}/Info.json`;
+            
             try {
                 let metadataResponse = await fetch(metadataUrl);
-
-                // Check if response is OK (status 200), otherwise log an error and continue
                 if (!metadataResponse.ok) {
                     console.error(`Error fetching metadata for ${folder}: ${metadataResponse.status}`);
                     continue;
                 }
-
+                
                 let metadata = await metadataResponse.json();
-
-                // Display album card
+                
+                // Update image path to include base path
                 Card_Container.innerHTML += `
                     <div data-folder="${folder}" class="Card">
-                        <img src="${baseURL}/Cover.png" alt="${metadata.Title}">
+                        <img src="${BASE_PATH}/Songs/${folder}/Cover.png" alt="${metadata.Title}">
                         <i class="ri-play-fill"></i>
                         <h2>${metadata.Title}</h2>
                         <p>${metadata.Description}</p>
@@ -170,15 +165,15 @@ async function displayAlbums() {
         }
     }
 
+    // Update event listeners
     Array.from(document.getElementsByClassName("Card")).forEach(e => {
         e.addEventListener("click", async item => {
             Songs = await getSongs(`Songs/${item.currentTarget.dataset.folder}`);
-            PlayMusic(Songs[0]);
-        });
-    });
+            PlayMusic(Songs[0])
+        })
+    })
 }
-
-
+    
     
 
 async function main() {
