@@ -123,7 +123,7 @@ let PlayMusic = (Track, pause = false) => {
 
 
 async function displayAlbums() {
-    let baseURL = "https://insaiyanbruh.github.io/Vibify/Songs/${folder}";
+    let baseURL = `https://insaiyanbruh.github.io/Vibify/Songs/${folder}`;
     let a = await fetch(baseURL);
     let response = await a.text();
     let div = document.createElement("div");
@@ -159,7 +159,7 @@ async function displayAlbums() {
                 // Display album card
                 Card_Container.innerHTML += `
                     <div data-folder="${folder}" class="Card">
-                        <img src="${baseURL}${folder}/Cover.png" alt="${metadata.Title}">
+                        <img src="${baseURL}/Cover.png" alt="${metadata.Title}">
                         <i class="ri-play-fill"></i>
                         <h2>${metadata.Title}</h2>
                         <p>${metadata.Description}</p>
