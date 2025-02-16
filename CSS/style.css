@@ -564,7 +564,7 @@ input[type="range"]::-webkit-slider-thumb{
     }
 
     .Seekbar{
-        width: 78vw;
+        width: 76vw;
         bottom: 1rem;
     }
 
