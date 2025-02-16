@@ -127,6 +127,7 @@ let PlayMusic = (Track, pause = false) => {
 }
 
 
+
 async function displayAlbums() {
     try {
         console.log("Starting to load albums...");
